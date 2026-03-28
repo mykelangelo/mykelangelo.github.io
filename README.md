@@ -1,4 +1,3 @@
-<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
@@ -27,6 +26,8 @@ button:disabled{background:#3a3a3a;color:#777}
 .xp-fill-old{background:#66c0f4;height:100%;position:absolute;left:0;top:0}
 .xp-fill-new{background:#a4d007;height:100%;position:absolute;top:0}
 .xp-label{margin-top:5px;font-size:13px}
+.info-tip{display:inline-block;margin-left:6px;color:#66c0f4;border:1px solid #66c0f4;border-radius:50%;width:16px;height:16px;font-size:11px;line-height:16px;text-align:center;position:relative}
+.info-tip:hover::after{content:attr(data-tip);position:absolute;bottom:120%;left:50%;transform:translateX(-50%);background:#000;padding:6px 8px;border:1px solid #66c0f4;color:#c7d5e0;font-size:12px;white-space:nowrap}
 </style>
 </head>
 <body>
@@ -34,6 +35,7 @@ button:disabled{background:#3a3a3a;color:#777}
 <div class="header">Badge Crafting</div>
 <div id="list"></div>
 <button class="bulk" id="bulkBtn">Bulk Craft</button>
+<span class="info-tip" data-tip="Bulk buy is not guaranteed. Prices are estimates and purchases may fail.">?</span>
 <div id="totalPrice" class="price"></div>
 <div id="xp" class="price"></div>
 <div class="xp-bar">
@@ -259,6 +261,7 @@ document.getElementById('bulkBtn').onclick=function(){
       s.level=0;
     }
   }
+  totalPriceEl.textContent='Subtotal: $0.00';
   render();
 };
 
