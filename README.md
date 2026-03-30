@@ -66,7 +66,7 @@ button:disabled{background:#3a3a3a;color:#777;cursor:not-allowed}
     </div>
     <div id="xpLabel" class="xp-label"></div>
   </div>
-  <div class="footer-note"><img class="footer-copyleft" alt="Copyleft" src="data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Ccircle cx='12' cy='12' r='10' fill='none' stroke='%238f98a0' stroke-width='1.8'/%3E%3Cpath d='M15.5 8.2 A5 5 0 1 0 15.5 15.8' fill='none' stroke='%238f98a0' stroke-width='1.8' stroke-linecap='round'/%3E%3C/svg%3E" />2026 Mykola Papenko · <a href="https://github.com/mykelangelo/mykelangelo.github.io/blob/main/LICENSE.md" target="_blank" rel="noopener noreferrer">License</a></div>
+  <div class="footer-note"><img class="footer-copyleft" alt="Copyleft" src="data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' style='background:none'%3E%3Ccircle cx='12' cy='12' r='10' fill='none' stroke='%238f98a0' stroke-width='1.8'/%3E%3Cpath d='M15.5 8.2 A5 5 0 1 0 15.5 15.8' fill='none' stroke='%238f98a0' stroke-width='1.8' stroke-linecap='round'/%3E%3C/svg%3E" />2026 Mykola Papenko · <a href="https://github.com/mykelangelo/mykelangelo.github.io/blob/main/LICENSE.md" target="_blank" rel="noopener noreferrer">License</a></div>
 </div>
 <script>
 var sets=[
