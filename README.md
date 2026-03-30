@@ -30,23 +30,32 @@ button:disabled{background:#3a3a3a;color:#777;cursor:not-allowed}
 .xp-label{margin-top:5px;font-size:13px}
 .buy-hint{margin-top:6px;font-size:12px;color:#a4d007;line-height:1.2;text-align:center}
 .info-tip{display:inline-block;margin-left:8px;color:#66c0f4;border:1px solid #66c0f4;border-radius:50%;width:16px;height:16px;font-size:11px;line-height:16px;text-align:center;position:relative;cursor:default;vertical-align:middle}
-.info-tip:hover::after{content:attr(data-tip);position:absolute;bottom:125%;left:50%;transform:translateX(-50%);background:#0e141b;border:1px solid #66c0f4;color:#c7d5e0;padding:6px 8px;white-space:nowrap;font-size:12px;z-index:10}
+.info-tip:hover::after{content:attr(data-tip);position:absolute;bottom:125%;left:50%;transform:translateX(-50%);background:#0e141b;border:1px solid #66c0f4;color:#c7d5e0;padding:6px 8px;white-space:normal;max-width:min(240px,calc(100vw - 32px));width:max-content;word-wrap:break-word;overflow-wrap:anywhere;text-align:left;font-size:12px;line-height:1.35;z-index:10;box-sizing:border-box}
+.right-edge-tip:hover::after{left:auto;right:0;transform:none;max-width:min(240px,calc(100vw - 24px))}
 .foil-separator{margin-top:10px;padding-top:10px;border-top:1px solid #2a475e}
 .xp-overlay{position:fixed;right:16px;bottom:16px;width:320px;background:rgba(14,20,27,.96);border:1px solid #2a475e;border-radius:8px;padding:12px;box-shadow:0 8px 24px rgba(0,0,0,.35);z-index:1000}
+.overlay-top{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:8px}
+.overlay-meta{min-width:0;flex:1}
+.overlay-actions{display:flex;justify-content:flex-end;align-items:center;gap:8px;flex:0 0 auto}
+.xp-overlay .bulk{margin:0;padding:8px 12px}
 .button-row{display:inline-flex;align-items:center;gap:8px}
 </style>
 </head>
 <body>
 <div class="container">
   <div id="list"></div>
-  <div class="button-row">
-    <button id="bulkBtn" class="bulk">Bulk Craft All</button>
-    <span class="info-tip" data-tip="Bulk buy is not guaranteed. Prices are estimates and purchases may fail.">?</span>
-  </div>
   <div class="xp-overlay">
-    <div id="price" class="price"></div>
-    <div id="xpGain" class="price"></div>
-    <div id="levelLine" class="price"></div>
+    <div class="overlay-top">
+      <div class="overlay-meta">
+        <div id="price" class="price"></div>
+        <div id="xpGain" class="price"></div>
+        <div id="levelLine" class="price"></div>
+      </div>
+      <div class="overlay-actions">
+        <button id="bulkBtn" class="bulk">Bulk Craft All</button>
+        <span class="info-tip right-edge-tip" data-tip="Bulk buy is not guaranteed. Prices are estimates and purchases may fail.">?</span>
+      </div>
+    </div>
     <div class="xp-bar">
       <div id="xpOld" class="xp-old"></div>
       <div id="xpNew" class="xp-new"></div>
