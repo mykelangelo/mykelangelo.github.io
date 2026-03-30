@@ -37,7 +37,7 @@ button:disabled{background:#3a3a3a;color:#777;cursor:not-allowed}
 .footer-note{margin-top:24px;font-size:12px;color:#8f98a0;text-align:center}
 .footer-note a{color:#66c0f4;text-decoration:none}
 .footer-note a:hover{text-decoration:underline}
-.footer-copyleft{width:14px;height:14px;vertical-align:-2px;margin-right:4px;transform:rotate(180deg);background:transparent}
+.footer-copyleft{display:inline-block;width:14px;height:14px;vertical-align:-2px;margin-right:4px;transform:rotate(180deg);background:transparent;background-repeat:no-repeat;background-size:contain;background-position:center;background-image:url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHZpZXdCb3g9JzAgMCAyNCAyNCc+PGNpcmNsZSBjeD0nMTInIGN5PScxMicgcj0nMTAnIGZpbGw9J25vbmUnIHN0cm9rZT0nIzhmOThhMCcgc3Ryb2tlLXdpZHRoPScxLjgnLz48cGF0aCBkPSdNMTUuNSA4LjIgQTUgNSAwIDEgMCAxNS41IDE1LjgnIGZpbGw9J25vbmUnIHN0cm9rZT0nIzhmOThhMCcgc3Ryb2tlLXdpZHRoPScxLjgnIHN0cm9rZS1saW5lY2FwPSdyb3VuZCcvPjwvc3ZnPg==")}
 .overlay-top{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:8px}
 .overlay-meta{min-width:0;flex:1}
 .overlay-actions{display:flex;justify-content:flex-end;align-items:center;gap:8px;flex:0 0 auto}
@@ -66,7 +66,7 @@ button:disabled{background:#3a3a3a;color:#777;cursor:not-allowed}
     </div>
     <div id="xpLabel" class="xp-label"></div>
   </div>
-  <div class="footer-note"><img class="footer-copyleft" alt="Copyleft" src="data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' style='background:none'%3E%3Ccircle cx='12' cy='12' r='10' fill='none' stroke='%238f98a0' stroke-width='1.8'/%3E%3Cpath d='M15.5 8.2 A5 5 0 1 0 15.5 15.8' fill='none' stroke='%238f98a0' stroke-width='1.8' stroke-linecap='round'/%3E%3C/svg%3E" />2026 Mykola Papenko · <a href="https://github.com/mykelangelo/mykelangelo.github.io/blob/main/LICENSE.md" target="_blank" rel="noopener noreferrer">License</a></div>
+  <div class="footer-note"><span class="footer-copyleft" aria-hidden="true"></span>2026 Mykola Papenko · <a href="https://github.com/mykelangelo/mykelangelo.github.io/blob/main/LICENSE.md" target="_blank" rel="noopener noreferrer">License</a></div>
 </div>
 <script>
 var sets=[
