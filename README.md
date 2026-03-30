@@ -4,264 +4,359 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Steam Badge Crafting Prototype</title>
 <style>
-body{margin:0;font-family:Arial;background:#1b2838;color:#c7d5e0}
-.container{max-width:1100px;margin:40px auto}
-.header{font-size:32px;margin-bottom:20px;color:#fff}
-.row{background:linear-gradient(to right,#0e141b,#16202d);border:1px solid #2a475e;padding:20px;margin-bottom:20px}
+body{margin:0;font-family:Arial,sans-serif;background:#1b2838;color:#c7d5e0}
+.container{max-width:1100px;margin:40px auto;padding:0 16px}
+.row{background:linear-gradient(to right,#0e141b,#16202d);border:1px solid #2a475e;padding:20px;margin-bottom:20px;border-radius:6px}
 .top{display:flex;justify-content:space-between;font-size:14px;color:#8f98a0;margin-bottom:10px}
 .content{display:flex;align-items:center;gap:12px}
-.badge{width:110px;height:110px;border:1px solid #4c6b8a;display:flex;align-items:center;justify-content:center;color:#66c0f4}
-.cards{display:flex;gap:10px}
-.card{width:90px;height:120px;background:#111;border:2px dashed #888;display:flex;align-items:center;justify-content:center;color:#ccc}
+.badge{width:110px;height:110px;border:1px solid #4c6b8a;background:#0e141b;display:flex;align-items:center;justify-content:center;color:#66c0f4;font-weight:bold;text-align:center;flex:0 0 auto}
+.badge.foil{border-color:#ffd700;color:#ffd700}
+.cards-wrap{flex:1;overflow-x:auto;overflow-y:hidden;padding-bottom:6px}
+.cards{display:flex;gap:10px;min-width:max-content}
+.card{width:90px;height:120px;background:#0e141b;border:2px dashed #566b7f;display:flex;flex-direction:column;align-items:center;justify-content:center;color:#c7d5e0;flex:0 0 auto}
 .card.owned{background:#2a475e;border:1px solid #000}
-button{margin-top:10px;padding:8px 16px;background:linear-gradient(#799905,#536904);border:none;color:#d2efa9;cursor:pointer}
-button:disabled{background:#3a3a3a;color:#777}
-.level-controls{display:flex;align-items:center;gap:10px;margin-top:10px}
-.arrow{width:28px;height:28px;display:flex;align-items:center;justify-content:center;background:#2a475e;border:1px solid #66c0f4;cursor:pointer}
+.card.foil{border-color:#ffd700;color:#ffd700}
+.toggle{cursor:pointer;color:#66c0f4;margin-top:8px;font-size:13px}
+.level-controls{display:flex;align-items:center;gap:10px;margin-top:10px;flex-wrap:wrap}
+.arrow{width:28px;height:28px;display:flex;align-items:center;justify-content:center;background:#2a475e;border:1px solid #66c0f4;cursor:pointer;user-select:none}
 .arrow.disabled{opacity:.3;cursor:not-allowed}
-.level-text{font-size:14px;color:#66c0f4}
-.bulk{margin-top:20px;padding:12px 20px;background:#66c0f4;color:#000;font-weight:bold}
+button{margin-top:10px;padding:8px 16px;background:linear-gradient(#799905,#536904);border:none;color:#d2efa9;cursor:pointer}
+button:disabled{background:#3a3a3a;color:#777;cursor:not-allowed}
+.bulk{margin:10px 0 20px 0;padding:12px 20px;background:#66c0f4;color:#000;font-weight:bold}
 .price{font-size:13px;color:#a4d007;margin-top:5px}
-.xp-bar{margin-top:20px;background:#0e141b;border:1px solid #2a475e;height:20px;position:relative}
-.xp-fill-old{background:#66c0f4;height:100%;position:absolute;left:0;top:0}
-.xp-fill-new{background:#a4d007;height:100%;position:absolute;top:0}
+.xp-bar{margin-top:10px;background:#0e141b;border:1px solid #2a475e;height:20px;position:relative}
+.xp-old{background:#66c0f4;height:100%;position:absolute;left:0;top:0}
+.xp-new{background:#a4d007;height:100%;position:absolute;top:0}
 .xp-label{margin-top:5px;font-size:13px}
-.info-tip{display:inline-block;margin-left:6px;color:#66c0f4;border:1px solid #66c0f4;border-radius:50%;width:16px;height:16px;font-size:11px;line-height:16px;text-align:center;position:relative}
-.info-tip:hover::after{content:attr(data-tip);position:absolute;bottom:120%;left:50%;transform:translateX(-50%);background:#000;padding:6px 8px;border:1px solid #66c0f4;color:#c7d5e0;font-size:12px;white-space:nowrap}
+.buy-hint{margin-top:6px;font-size:12px;color:#a4d007;line-height:1.2;text-align:center}
+.info-tip{display:inline-block;margin-left:8px;color:#66c0f4;border:1px solid #66c0f4;border-radius:50%;width:16px;height:16px;font-size:11px;line-height:16px;text-align:center;position:relative;cursor:default;vertical-align:middle}
+.info-tip:hover::after{content:attr(data-tip);position:absolute;bottom:125%;left:50%;transform:translateX(-50%);background:#0e141b;border:1px solid #66c0f4;color:#c7d5e0;padding:6px 8px;white-space:nowrap;font-size:12px;z-index:10}
+.foil-separator{margin-top:10px;padding-top:10px;border-top:1px solid #2a475e}
+.small-muted{font-size:12px;color:#8f98a0}
 </style>
 </head>
 <body>
 <div class="container">
-<div class="header">Badge Crafting</div>
-<div id="list"></div>
-<button class="bulk" id="bulkBtn">Bulk Craft</button>
-<span class="info-tip" data-tip="Bulk buy is not guaranteed. Prices are estimates and purchases may fail.">?</span>
-<div id="totalPrice" class="price"></div>
-<div id="xp" class="price"></div>
-<div class="xp-bar">
-  <div id="xpOld" class="xp-fill-old"></div>
-  <div id="xpNew" class="xp-fill-new"></div>
-</div>
-<div id="xpLabel" class="xp-label"></div>
+  <div id="list"></div>
+  <button id="bulkBtn" class="bulk">Bulk Craft All</button><span class="info-tip" data-tip="Bulk buy is not guaranteed. Prices are estimates and purchases may fail.">?</span>
+  <div id="price" class="price"></div>
+  <div id="levelLine" class="price"></div>
+  <div class="xp-bar">
+    <div id="xpOld" class="xp-old"></div>
+    <div id="xpNew" class="xp-new"></div>
+  </div>
+  <div id="xpLabel" class="xp-label"></div>
 </div>
 
 <script>
-var CARD_PRICES=[0.12,0.15,0.09,0.2,0.11];
-var priceCache={};
-function getPrice(i){
-  if(priceCache[i]!=null) return priceCache[i];
-  var v=Math.max(0.03,CARD_PRICES[i]+(Math.random()*0.04-0.02));
-  priceCache[i]=v;
-  return v;
-}
-
-var badgeSets=[
-  { name:"Portal", total:5, owned:[true,false,true,false,true], counts:[2,2,2,2,2], level:0, crafted:0, max:5 },
-  { name:"Portal 2", total:5, owned:[true,true,true,true,true], counts:[3,2,3,2,2], level:0, crafted:0, max:5 },
-  { name:"Portal 3", total:5, owned:[true,true,true,true,true], counts:[1,1,1,1,1], level:0, crafted:0, max:5 }
+var sets=[
+ {name:"Portal",counts:[2,0,2,0,2],foil:[1,0,1,0,1],prices:[0.11,0.14,0.10,0.16,0.12],foilPrices:[0.24,0.28,0.22,0.30,0.25],showFoil:false,level:0,foilLevel:0,crafted:0,foilCrafted:0,max:5},
+ {name:"Portal 2",counts:[3,2,3,2,2,2,2,2],foil:[1,1,1,1,1,1,1,1],prices:[0.09,0.11,0.10,0.12,0.13,0.14,0.15,0.16],foilPrices:[0.22,0.24,0.23,0.25,0.26,0.27,0.28,0.29],showFoil:false,level:0,foilLevel:0,crafted:0,foilCrafted:0,max:5},
+ {name:"Portal 3",counts:[1,1,1,1,1,1,1,1,1,1,1,1,1],foil:[0,1,0,1,0,1,0,1,0,1,0,1,0],prices:[0.08,0.09,0.10,0.11,0.12,0.13,0.11,0.12,0.10,0.14,0.13,0.12,0.15],foilPrices:[0.21,0.22,0.23,0.24,0.25,0.26,0.24,0.25,0.23,0.27,0.26,0.25,0.28],showFoil:false,level:0,foilLevel:0,crafted:0,foilCrafted:0,max:5}
 ];
 
-var list=document.getElementById('list');
-var totalPriceEl=document.getElementById('totalPrice');
-var xpEl=document.getElementById('xp');
-var xpOldEl=document.getElementById('xpOld');
-var xpNewEl=document.getElementById('xpNew');
-var xpLabelEl=document.getElementById('xpLabel');
+var baseXP=78*1000+400;
 
-function min(arr){ var m=arr[0]; for(var i=1;i<arr.length;i++){ if(arr[i]<m)m=arr[i]; } return m; }
-
-function calcSetCost(set){
-  if(set.level===0) return 0;
-  var arr=[];
-  for(var i=0;i<set.total;i++) arr.push(set.owned[i]?set.counts[i]:0);
-  var fullSets=min(arr);
-  var paid=Math.max(0,set.level-fullSets);
-  if(paid===0) return 0;
-  var full=0;
-  for(var i=0;i<set.total;i++) full+=getPrice(i);
-  return full*paid;
+function levelRequirement(level){
+  if(level<=79) return 1000;
+  return 1000 + (level-79)*100;
 }
 
-var BASE_LEVEL=78;
-var BASE_XP_IN_LEVEL=400;
-
-function calcCurrentXP(){
-  var xp=BASE_LEVEL*1000+BASE_XP_IN_LEVEL;
-  for(var i=0;i<badgeSets.length;i++) xp+=badgeSets[i].crafted*100;
-  return xp;
+function calcPreviewXP(){
+  var add=0;
+  sets.forEach(function(s){
+    add += (s.level||0)*100 + (s.foilLevel||0)*100;
+  });
+  return add;
 }
 
-function calcXP(){
-  var xp=calcCurrentXP();
-  for(var i=0;i<badgeSets.length;i++) xp+=badgeSets[i].level*100;
-  return xp;
+function priceMultiplierForLevel(levelIndex){
+  if(levelIndex < 2) return 1;
+  return 1 + ((levelIndex - 1) * 0.08);
 }
 
-function calcTotal(){
-  var sum=0;
-  for(var i=0;i<badgeSets.length;i++) sum+=calcSetCost(badgeSets[i]);
-  return sum;
+function priceAt(basePrice, levelIndex){
+  var microFluctuation = ((levelIndex % 2) === 0 ? 0.01 : 0.02);
+  return (basePrice + microFluctuation) * priceMultiplierForLevel(levelIndex);
+}
+
+function calcMissingCost(basePrice, ownedCount, desiredLevel){
+  var total=0;
+  for(var l=0;l<desiredLevel;l++){
+    if(ownedCount <= l){
+      total += priceAt(basePrice, l);
+    }
+  }
+  return total;
+}
+
+function calcRowCost(s){
+  var total=0;
+  for(var l=0;l<s.level;l++){
+    for(var i=0;i<s.counts.length;i++){
+      if(s.counts[i] <= l){
+        total += priceAt(s.prices[i], l);
+      }
+    }
+  }
+  for(var lf=0;lf<s.foilLevel;lf++){
+    for(var j=0;j<s.foil.length;j++){
+      if(s.foil[j] <= lf){
+        total += priceAt(s.foilPrices[j], lf);
+      }
+    }
+  }
+  return total;
+}
+
+function calcCost(){
+  var total=0;
+  sets.forEach(function(s){ total += calcRowCost(s); });
+  return total;
 }
 
 function updateXPUI(){
-  var currentXP=calcCurrentXP();
-  var futureXP=calcXP();
+  var currentXP = baseXP;
+  var add = calcPreviewXP();
+  var startLevel = Math.floor(currentXP/1000);
+  var currentLevel = startLevel;
+  var progress = currentXP % 1000;
+  var req = levelRequirement(currentLevel + 1);
+  var remaining = add;
+  var crossed = false;
 
-  var baseLevel=Math.floor(currentXP/1000);
-  var xpInLevel=currentXP%1000;
-
-  var gainedXP=futureXP-currentXP;
-
-  var level=baseLevel;
-  var requirement=1000;
-  var progress=xpInLevel;
-
-  var startedNextLevel=false;
-
-  while(gainedXP>0){
-    var remaining=requirement-progress;
-    if(gainedXP>=remaining){
-      gainedXP-=remaining;
-      level++;
-      requirement=1000 + (level-baseLevel)*100;
-      progress=0;
-      startedNextLevel=true;
+  while(remaining > 0){
+    var room = req - progress;
+    if(remaining >= room){
+      remaining -= room;
+      currentLevel += 1;
+      progress = 0;
+      req = levelRequirement(currentLevel + 1);
+      crossed = true;
     } else {
-      progress+=gainedXP;
-      gainedXP=0;
+      progress += remaining;
+      remaining = 0;
     }
   }
 
-  xpEl.textContent='Level '+baseLevel+' → '+level;
+  document.getElementById('levelLine').textContent='Level '+startLevel+' → '+currentLevel;
 
-  var oldWidth=(xpInLevel/1000)*100;
-
-  if(startedNextLevel){
-    xpOldEl.style.width='0%';
-    xpNewEl.style.left='0%';
-    xpNewEl.style.width=(progress/requirement)*100+'%';
-    xpLabelEl.textContent='0 → '+progress+' / '+requirement;
+  if(crossed){
+    document.getElementById('xpOld').style.width='0%';
+    document.getElementById('xpNew').style.left='0%';
+    document.getElementById('xpNew').style.width=(progress/req*100)+'%';
   } else {
-    var newWidth=(progress/requirement)*100;
-    xpOldEl.style.width=oldWidth+'%';
-    xpNewEl.style.left=oldWidth+'%';
-    xpNewEl.style.width=Math.max(0,newWidth-oldWidth)+'%';
-    xpLabelEl.textContent=xpInLevel+' → '+progress+' / '+requirement;
+    var startProgress = currentXP % 1000;
+    var startReq = levelRequirement(startLevel + 1);
+    var basePct = startProgress/startReq*100;
+    document.getElementById('xpOld').style.width=basePct+'%';
+    document.getElementById('xpNew').style.left=basePct+'%';
+    document.getElementById('xpNew').style.width=((progress-startProgress)/startReq*100)+'%';
   }
+
+  document.getElementById('xpLabel').textContent=progress+' / '+req+' XP';
+}
+
+function buildLevelControls(labelText, value, maxValue, onDown, onUp, hintText){
+  var controls=document.createElement('div');
+  controls.className='level-controls';
+
+  var down=document.createElement('div'); down.className='arrow'; down.textContent='▼';
+  var text=document.createElement('div'); text.className='level-text'; text.textContent='+'+value+' '+labelText;
+  var up=document.createElement('div'); up.className='arrow'; up.textContent='▲';
+  var tip=document.createElement('span'); tip.className='info-tip'; tip.textContent='?'; tip.setAttribute('data-tip', hintText);
+
+  if(value <= 0){ down.classList.add('disabled'); }
+  if(value >= maxValue){ up.classList.add('disabled'); }
+
+  down.onclick=function(){ if(value>0){ onDown(); } };
+  up.onclick=function(){ if(value<maxValue){ onUp(); } };
+
+  controls.appendChild(down);
+  controls.appendChild(text);
+  controls.appendChild(up);
+  controls.appendChild(tip);
+  return controls;
 }
 
 function render(){
+  var list=document.getElementById('list');
   list.innerHTML='';
-  priceCache={};
 
-  for(var s=0;s<badgeSets.length;s++){
-    (function(set){
+  sets.forEach(function(s){
+    var row=document.createElement('div');
+    row.className='row';
 
-      var ownedCount=0;
-      for(var i=0;i<set.owned.length;i++) if(set.owned[i]) ownedCount++;
+    var owned=s.counts.filter(function(c){ return c>0; }).length;
+    var title = s.name + ' (Level ' + s.crafted + ')';
+    if(s.showFoil){
+      title += ' | Foil Level ' + (s.foilCrafted || 0);
+    }
+    row.innerHTML='<div class="top"><div>'+title+'</div><div>'+owned+'/'+s.counts.length+' cards</div></div>';
 
-      var row=document.createElement('div');
-      row.className='row';
+    var main=document.createElement('div');
+    main.className='content';
 
-      row.innerHTML='<div class="top"><div>'+set.name+' (Level '+set.crafted+')</div><div>'+ownedCount+'/'+set.total+'</div></div><div class="content"><div class="badge">Badge</div><div class="cards"></div></div>';
+    var badge=document.createElement('div');
+    badge.className='badge';
+    badge.textContent='Badge';
 
-      var cardsEl=row.querySelector('.cards');
-      for(var i=0;i<set.owned.length;i++){
-        var c=document.createElement('div');
-        c.className='card'+(set.owned[i]?' owned':'');
-        var count=set.counts[i];
-        c.textContent=set.owned[i]?'✔ x'+count:'? x0';
-        cardsEl.appendChild(c);
+    var cardsWrap=document.createElement('div');
+    cardsWrap.className='cards-wrap';
+    var cards=document.createElement('div');
+    cards.className='cards';
+    s.counts.forEach(function(c, i){
+      var el=document.createElement('div');
+      el.className='card'+(c>0?' owned':'');
+      el.innerHTML=c>0?'<div>✔</div><div>x'+c+'</div>':'<div>?</div>';
+      var missing = Math.max(0, s.level - c);
+      if(missing > 0){
+        var buy=document.createElement('div');
+        buy.className='buy-hint';
+        buy.innerHTML='🛒 x'+missing+'<br>$'+calcMissingCost(s.prices[i], c, s.level).toFixed(2);
+        el.appendChild(buy);
       }
+      cards.appendChild(el);
+    });
+    cardsWrap.appendChild(cards);
 
-      if(set.crafted >= set.max){
-        var maxEl=document.createElement('div');
-        maxEl.className='level-text';
-        maxEl.style.marginTop='10px';
-        maxEl.style.color='#a4d007';
-        maxEl.textContent='Max badge level';
-        row.appendChild(maxEl);
-      } else {
-        var controls=document.createElement('div');
-        controls.className='level-controls';
+    main.appendChild(badge);
+    main.appendChild(cardsWrap);
+    row.appendChild(main);
 
-        var down=document.createElement('div'); down.className='arrow'; down.textContent='▼';
-        var text=document.createElement('div'); text.className='level-text';
-        var up=document.createElement('div'); up.className='arrow'; up.textContent='▲';
+    var normalControls = buildLevelControls(
+      'levels',
+      s.level,
+      Math.min(5, s.max - s.crafted),
+      function(){ s.level--; render(); },
+      function(){ s.level++; render(); },
+      'Estimated price only. Missing cards may be bought during bulk craft, and purchase can fail.'
+    );
+    row.appendChild(normalControls);
 
-        controls.appendChild(down);
-        controls.appendChild(text);
-        controls.appendChild(up);
-
-        var priceEl=document.createElement('div');
-        priceEl.className='price';
-
-        var btn=document.createElement('button');
-        btn.textContent='Craft Badge';
-
-        row.appendChild(controls);
-        row.appendChild(priceEl);
-        row.appendChild(btn);
-
-        function update(){
-          text.textContent='+'+set.level+' levels';
-
-          var arr=[];
-          for(var i=0;i<set.total;i++) arr.push(set.owned[i]?set.counts[i]:0);
-          var fullSets=min(arr);
-          var desired=set.level===0?1:set.level;
-
-          btn.disabled = desired > fullSets;
-
-          var maxSelectable = Math.min(5, set.max - set.crafted);
-          if(set.level >= maxSelectable) up.classList.add('disabled'); else up.classList.remove('disabled');
-          if(set.level <= 0) down.classList.add('disabled'); else down.classList.remove('disabled');
-
-          priceEl.textContent=set.level>0?'Est. cost: $'+calcSetCost(set).toFixed(2):'';
-          totalPriceEl.textContent='Subtotal: $'+calcTotal().toFixed(2);
-
-          updateXPUI();
+    var btn=document.createElement('button');
+    btn.textContent='Craft Badge';
+    var normalFullSets = Math.min.apply(null, s.counts);
+    var normalDesired = Math.max(1, s.level);
+    btn.disabled = normalFullSets < normalDesired;
+    btn.onclick=function(){
+      var lvl=Math.max(1,s.level);
+      for(var l=0;l<lvl;l++){
+        for(var i=0;i<s.counts.length;i++){
+          s.counts[i]=Math.max(0,s.counts[i]-1);
         }
-
-        up.onclick=function(){ if(set.level < Math.min(5, set.max - set.crafted)){ set.level++; update(); } };
-        down.onclick=function(){ if(set.level>0){ set.level--; update(); } };
-
-        btn.onclick=function(){
-          for(var i=0;i<set.counts.length;i++){
-            if(set.owned[i]){
-              set.counts[i]--;
-              if(set.counts[i]<=0){ set.counts[i]=0; set.owned[i]=false; }
-            }
-          }
-          set.crafted++;
-          set.level=0;
-          render();
-        };
-
-        update();
+        s.crafted++;
+        baseXP+=100;
       }
+      s.level=0;
+      render();
+    };
+    row.appendChild(btn);
 
-      list.appendChild(row);
+    var toggle=document.createElement('div');
+    toggle.className='toggle';
+    toggle.textContent=s.showFoil?'▼ Hide Foil':'▶ Show Foil';
+    toggle.onclick=function(){ s.showFoil=!s.showFoil; render(); };
+    row.appendChild(toggle);
 
-    })(badgeSets[s]);
-  }
+    if(s.showFoil){
+      var foilOwned=s.foil.filter(function(c){ return c>0; }).length;
+      var foilTop=document.createElement('div');
+      foilTop.className='top foil-separator';
+      foilTop.innerHTML='<div>Foil</div><div>'+foilOwned+'/'+s.foil.length+' cards</div>';
+      row.appendChild(foilTop);
+
+      var foilRow=document.createElement('div');
+      foilRow.className='content';
+
+      var fbadge=document.createElement('div');
+      fbadge.className='badge foil';
+      fbadge.textContent='Foil Badge';
+
+      var fcardsWrap=document.createElement('div');
+      fcardsWrap.className='cards-wrap';
+      var fcards=document.createElement('div');
+      fcards.className='cards';
+      s.foil.forEach(function(c, i){
+        var el=document.createElement('div');
+        el.className='card foil'+(c>0?' owned':'');
+        el.innerHTML=c>0?'<div>★</div><div>x'+c+'</div>':'<div>?</div>';
+        var missing = Math.max(0, s.foilLevel - c);
+        if(missing > 0){
+          var buy=document.createElement('div');
+          buy.className='buy-hint';
+          buy.innerHTML='🛒 x'+missing+'<br>$'+calcMissingCost(s.foilPrices[i], c, s.foilLevel).toFixed(2);
+          el.appendChild(buy);
+        }
+        fcards.appendChild(el);
+      });
+      fcardsWrap.appendChild(fcards);
+
+      foilRow.appendChild(fbadge);
+      foilRow.appendChild(fcardsWrap);
+      row.appendChild(foilRow);
+
+      var foilControls = buildLevelControls(
+        'foil levels',
+        s.foilLevel,
+        Math.min(5, s.max - (s.foilCrafted||0)),
+        function(){ s.foilLevel--; render(); },
+        function(){ s.foilLevel++; render(); },
+        'Estimated price only. Missing foil cards may be bought during bulk craft, and purchase can fail.'
+      );
+      row.appendChild(foilControls);
+
+      var fBtn=document.createElement('button');
+      fBtn.textContent='Craft Foil Badge';
+      var foilFullSets = Math.min.apply(null, s.foil);
+      var foilDesired = Math.max(1, s.foilLevel);
+      fBtn.disabled = foilFullSets < foilDesired;
+      fBtn.onclick=function(){
+        var lvl=Math.max(1,s.foilLevel);
+        for(var lf=0;lf<lvl;lf++){
+          for(var j=0;j<s.foil.length;j++){
+            s.foil[j]=Math.max(0,s.foil[j]-1);
+          }
+          s.foilCrafted++;
+          baseXP+=100;
+        }
+        s.foilLevel=0;
+        render();
+      };
+      row.appendChild(fBtn);
+    }
+
+    var rowPrice=document.createElement('div');
+    rowPrice.className='price';
+    rowPrice.textContent='Row estimate: $'+calcRowCost(s).toFixed(2);
+    row.appendChild(rowPrice);
+
+    list.appendChild(row);
+  });
+
+  document.getElementById('price').textContent='Estimated cost: $'+calcCost().toFixed(2);
+  updateXPUI();
 }
 
 document.getElementById('bulkBtn').onclick=function(){
-  for(var i=0;i<badgeSets.length;i++){
-    var s=badgeSets[i];
-    if(s.level>0){
-      for(var j=0;j<s.counts.length;j++){
-        if(s.owned[j]){
-          s.counts[j]-=s.level;
-          if(s.counts[j]<=0){ s.counts[j]=0; s.owned[j]=false; }
-        }
+  sets.forEach(function(s){
+    for(var l=0;l<s.level;l++){
+      for(var i=0;i<s.counts.length;i++){
+        s.counts[i]=Math.max(0,s.counts[i]-1);
       }
-      s.crafted+=s.level;
-      s.level=0;
+      s.crafted++;
+      baseXP+=100;
     }
-  }
-  totalPriceEl.textContent='Subtotal: $0.00';
+    for(var lf=0;lf<s.foilLevel;lf++){
+      for(var j=0;j<s.foil.length;j++){
+        s.foil[j]=Math.max(0,s.foil[j]-1);
+      }
+      s.foilCrafted++;
+      baseXP+=100;
+    }
+    s.level=0;
+    s.foilLevel=0;
+  });
   render();
 };
 
