@@ -13,7 +13,7 @@ body{margin:0;font-family:Arial,sans-serif;background:#1b2838;color:#c7d5e0}
 .badge.foil{border-color:#ffd700;color:#ffd700}
 .cards-wrap{flex:1;overflow-x:auto;overflow-y:hidden;padding-bottom:6px}
 .cards{display:flex;gap:10px;min-width:max-content}
-.card{width:90px;height:120px;background:#0e141b;border:2px dashed #566b7f;display:flex;flex-direction:column;align-items:center;justify-content:center;color:#c7d5e0;flex:0 0 auto;box-sizing:border-box}
+.card{width:90px;height:120px;background:#0e141b;border:2px dashed #566b7f;display:flex;flex-direction:column;align-items:center;justify-content:center;color:#c7d5e0;flex:0 0 auto;box-sizing:border-box;text-align:center;padding:4px}
 .card.owned{background:#2a475e;border:1px solid #000}
 .card.foil{border-color:#ffd700;color:#ffd700}
 .toggle{cursor:pointer;color:#66c0f4;margin-top:8px;font-size:13px}
@@ -32,19 +32,27 @@ button:disabled{background:#3a3a3a;color:#777;cursor:not-allowed}
 .info-tip{display:inline-block;margin-left:8px;color:#66c0f4;border:1px solid #66c0f4;border-radius:50%;width:16px;height:16px;font-size:11px;line-height:16px;text-align:center;position:relative;cursor:default;vertical-align:middle}
 .info-tip:hover::after{content:attr(data-tip);position:absolute;bottom:125%;left:50%;transform:translateX(-50%);background:#0e141b;border:1px solid #66c0f4;color:#c7d5e0;padding:6px 8px;white-space:nowrap;font-size:12px;z-index:10}
 .foil-separator{margin-top:10px;padding-top:10px;border-top:1px solid #2a475e}
+.xp-overlay{position:fixed;right:16px;bottom:16px;width:320px;background:rgba(14,20,27,.96);border:1px solid #2a475e;border-radius:8px;padding:12px;box-shadow:0 8px 24px rgba(0,0,0,.35);z-index:1000}
+.button-row{display:inline-flex;align-items:center;gap:8px}
 </style>
 </head>
 <body>
 <div class="container">
   <div id="list"></div>
-  <button id="bulkBtn" class="bulk">Bulk Craft All</button><span class="info-tip" data-tip="Bulk buy is not guaranteed. Prices are estimates and purchases may fail.">?</span>
-  <div id="price" class="price"></div>
-  <div id="levelLine" class="price"></div>
-  <div class="xp-bar">
-    <div id="xpOld" class="xp-old"></div>
-    <div id="xpNew" class="xp-new"></div>
+  <div class="button-row">
+    <button id="bulkBtn" class="bulk">Bulk Craft All</button>
+    <span class="info-tip" data-tip="Bulk buy is not guaranteed. Prices are estimates and purchases may fail.">?</span>
   </div>
-  <div id="xpLabel" class="xp-label"></div>
+  <div class="xp-overlay">
+    <div id="price" class="price"></div>
+    <div id="xpGain" class="price"></div>
+    <div id="levelLine" class="price"></div>
+    <div class="xp-bar">
+      <div id="xpOld" class="xp-old"></div>
+      <div id="xpNew" class="xp-new"></div>
+    </div>
+    <div id="xpLabel" class="xp-label"></div>
+  </div>
 </div>
 
 <script>
@@ -59,23 +67,45 @@ var profileXP=400;
 
 function countOwned(arr){
   var owned=0;
-  for(var i=0;i<arr.length;i++){
-    if(arr[i]>0){ owned++; }
-  }
+  for(var i=0;i<arr.length;i++) if(arr[i]>0) owned++;
   return owned;
 }
 
 function minArray(arr){
   var m=arr[0];
-  for(var i=1;i<arr.length;i++){
-    if(arr[i]<m){ m=arr[i]; }
-  }
+  for(var i=1;i<arr.length;i++) if(arr[i]<m) m=arr[i];
   return m;
 }
 
-function levelRequirement(level){
-  if(level<=79){ return 1000; }
-  return 1000 + (level-79)*100;
+function levelRequirement(targetLevel){
+  if(targetLevel<=79) return 1000;
+  return 1000 + (targetLevel-79)*100;
+}
+
+function simulateXP(level, xp, add){
+  var currentLevel=level;
+  var progress=xp;
+  var remaining=add;
+  var req=levelRequirement(currentLevel+1);
+  while(remaining>0){
+    var room=req-progress;
+    if(remaining>=room){
+      remaining-=room;
+      currentLevel+=1;
+      progress=0;
+      req=levelRequirement(currentLevel+1);
+    } else {
+      progress+=remaining;
+      remaining=0;
+    }
+  }
+  return {level:currentLevel,xp:progress,req:req};
+}
+
+function applyXP(amount){
+  var result=simulateXP(profileLevel, profileXP, amount);
+  profileLevel=result.level;
+  profileXP=result.xp;
 }
 
 function calcPreviewXP(){
@@ -88,21 +118,19 @@ function calcPreviewXP(){
 }
 
 function priceMultiplierForLevel(levelIndex){
-  if(levelIndex < 2){ return 1; }
-  return 1 + ((levelIndex - 1) * 0.08);
+  if(levelIndex<2) return 1;
+  return 1 + ((levelIndex-1)*0.08);
 }
 
 function priceAt(basePrice, levelIndex){
-  var micro = ((levelIndex % 2) === 0 ? 0.01 : 0.02);
+  var micro=((levelIndex % 2)===0 ? 0.01 : 0.02);
   return (basePrice + micro) * priceMultiplierForLevel(levelIndex);
 }
 
 function calcMissingCost(basePrice, ownedCount, desiredLevel){
   var total=0;
   for(var l=0;l<desiredLevel;l++){
-    if(ownedCount <= l){
-      total += priceAt(basePrice, l);
-    }
+    if(ownedCount<=l) total += priceAt(basePrice,l);
   }
   return total;
 }
@@ -111,16 +139,12 @@ function calcRowCost(s){
   var total=0;
   for(var l=0;l<s.level;l++){
     for(var i=0;i<s.counts.length;i++){
-      if(s.counts[i] <= l){
-        total += priceAt(s.prices[i], l);
-      }
+      if(s.counts[i]<=l) total += priceAt(s.prices[i],l);
     }
   }
   for(var lf=0;lf<s.foilLevel;lf++){
     for(var j=0;j<s.foil.length;j++){
-      if(s.foil[j] <= lf){
-        total += priceAt(s.foilPrices[j], lf);
-      }
+      if(s.foil[j]<=lf) total += priceAt(s.foilPrices[j],lf);
     }
   }
   return total;
@@ -128,87 +152,47 @@ function calcRowCost(s){
 
 function calcCost(){
   var total=0;
-  for(var i=0;i<sets.length;i++){
-    total += calcRowCost(sets[i]);
-  }
+  for(var i=0;i<sets.length;i++) total += calcRowCost(sets[i]);
   return total;
 }
 
-function simulateXP(level, xp, add){
-  var currentLevel = level;
-  var progress = xp;
-  var remaining = add;
-  var req = levelRequirement(currentLevel + 1);
-
-  while(remaining > 0){
-    var room = req - progress;
-    if(remaining >= room){
-      remaining -= room;
-      currentLevel += 1;
-      progress = 0;
-      req = levelRequirement(currentLevel + 1);
-    } else {
-      progress += remaining;
-      remaining = 0;
-    }
-  }
-
-  return { level: currentLevel, xp: progress, req: req };
-}
-
-function applyXP(amount){
-  var result = simulateXP(profileLevel, profileXP, amount);
-  profileLevel = result.level;
-  profileXP = result.xp;
-}
-
 function updateXPUI(){
-  var add = calcPreviewXP();
-  var preview = simulateXP(profileLevel, profileXP, add);
-
+  var preview=simulateXP(profileLevel, profileXP, calcPreviewXP());
   document.getElementById('levelLine').textContent='Level '+profileLevel+' → '+preview.level;
-
-  if(preview.level > profileLevel){
+  if(preview.level>profileLevel){
     document.getElementById('xpOld').style.width='0%';
     document.getElementById('xpNew').style.left='0%';
     document.getElementById('xpNew').style.width=(preview.xp/preview.req*100)+'%';
   } else {
-    var basePct = profileXP/levelRequirement(profileLevel + 1)*100;
+    var basePct=profileXP/levelRequirement(profileLevel+1)*100;
     document.getElementById('xpOld').style.width=basePct+'%';
     document.getElementById('xpNew').style.left=basePct+'%';
-    document.getElementById('xpNew').style.width=((preview.xp-profileXP)/levelRequirement(profileLevel + 1)*100)+'%';
+    document.getElementById('xpNew').style.width=((preview.xp-profileXP)/levelRequirement(profileLevel+1)*100)+'%';
   }
-
   document.getElementById('xpLabel').textContent=preview.xp+' / '+preview.req+' XP';
+  document.getElementById('xpGain').textContent='+'+calcPreviewXP()+' XP total';
 }
 
 function buildLevelControls(labelText, value, maxValue, onDown, onUp, hintText){
   var controls=document.createElement('div');
   controls.className='level-controls';
-
   var down=document.createElement('div');
   down.className='arrow';
   down.textContent='▼';
-
   var text=document.createElement('div');
   text.className='level-text';
   text.textContent='+'+value+' '+labelText;
-
   var up=document.createElement('div');
   up.className='arrow';
   up.textContent='▲';
-
   var tip=document.createElement('span');
   tip.className='info-tip';
   tip.textContent='?';
-  tip.setAttribute('data-tip', hintText);
-
-  if(value <= 0){ down.classList.add('disabled'); }
-  if(value >= maxValue){ up.classList.add('disabled'); }
-
-  down.onclick=function(){ if(value>0){ onDown(); } };
-  up.onclick=function(){ if(value<maxValue){ onUp(); } };
-
+  tip.setAttribute('data-tip',hintText);
+  if(value<=0) down.classList.add('disabled');
+  if(value>=maxValue) up.classList.add('disabled');
+  down.onclick=function(){ if(value>0) onDown(); };
+  up.onclick=function(){ if(value<maxValue) onUp(); };
   controls.appendChild(down);
   controls.appendChild(text);
   controls.appendChild(up);
@@ -216,7 +200,7 @@ function buildLevelControls(labelText, value, maxValue, onDown, onUp, hintText){
   return controls;
 }
 
-function makeCard(c, isFoil, missingCount, missingCost){
+function makeCard(c,isFoil,missingCount,missingCost){
   var el=document.createElement('div');
   el.className='card'+(isFoil?' foil':'')+(c>0?' owned':'');
   if(c>0){
@@ -224,7 +208,7 @@ function makeCard(c, isFoil, missingCount, missingCost){
   } else {
     el.innerHTML='<div>?</div>';
   }
-  if(missingCount > 0){
+  if(missingCount>0){
     var buy=document.createElement('div');
     buy.className='buy-hint';
     buy.innerHTML='🛒 x'+missingCount+'<br>$'+missingCost.toFixed(2);
@@ -244,66 +228,56 @@ function render(){
 
       var owned=countOwned(s.counts);
       var title=s.name+' (Level '+s.crafted+')';
-      if(s.showFoil){
-        title += ' | Foil Level ' + (s.foilCrafted || 0);
-      }
-
+      if(s.showFoil) title += ' | Foil Level '+(s.foilCrafted||0);
       var countLabel=owned+'/'+s.counts.length+' cards';
-      if(s.counts.length > 5){
-        countLabel += ' <span class="info-tip" data-tip="Scroll horizontally to see the full card set.">?</span>';
-      }
+      if(s.counts.length>5) countLabel += ' <span class="info-tip" data-tip="Scroll horizontally to see the full card set.">?</span>';
       row.innerHTML='<div class="top"><div>'+title+'</div><div>'+countLabel+'</div></div>';
 
       var main=document.createElement('div');
       main.className='content';
-
       var badge=document.createElement('div');
       badge.className='badge';
       badge.textContent='Badge';
-
       var cardsWrap=document.createElement('div');
       cardsWrap.className='cards-wrap';
       var cards=document.createElement('div');
       cards.className='cards';
       for(var i=0;i<s.counts.length;i++){
-        var missing = Math.max(0, s.level - s.counts[i]);
-        var missingCost = calcMissingCost(s.prices[i], s.counts[i], s.level);
-        cards.appendChild(makeCard(s.counts[i], false, missing, missingCost));
+        var missing=Math.max(0,s.level-s.counts[i]);
+        var missingCost=calcMissingCost(s.prices[i],s.counts[i],s.level);
+        cards.appendChild(makeCard(s.counts[i],false,missing,missingCost));
       }
       cardsWrap.appendChild(cards);
-
       main.appendChild(badge);
       main.appendChild(cardsWrap);
       row.appendChild(main);
 
-      var normalControls = buildLevelControls(
-        'levels',
-        s.level,
-        Math.min(5, s.max - s.crafted),
-        function(){ s.level--; render(); },
-        function(){ s.level++; render(); },
-        'Estimated price only. Missing cards may be bought during bulk craft, and purchase can fail.'
-      );
-      row.appendChild(normalControls);
+      row.appendChild(buildLevelControls('levels',s.level,Math.min(5,s.max-s.crafted),function(){s.level--;render();},function(){s.level++;render();},'Estimated price only. Missing cards may be bought during bulk craft, and purchase can fail.'));
 
+      var btnWrap=document.createElement('div');
+      btnWrap.className='button-row';
       var btn=document.createElement('button');
       btn.textContent='Craft Badge';
-      var normalFullSets = minArray(s.counts);
-      var normalDesired = Math.max(1, s.level);
-      btn.disabled = normalFullSets < normalDesired;
+      var btnTip=document.createElement('span');
+      btnTip.className='info-tip';
+      btnTip.textContent='?';
+      btnTip.setAttribute('data-tip','Individual craft is only available per badge and only when all required cards are already present. Otherwise, use Bulk Craft.');
+      var normalFullSets=minArray(s.counts);
+      var normalDesired=Math.max(1,s.level);
+      btn.disabled=normalFullSets<normalDesired;
       btn.onclick=function(){
         var lvl=Math.max(1,s.level);
         for(var l=0;l<lvl;l++){
-          for(var a=0;a<s.counts.length;a++){
-            s.counts[a]=Math.max(0,s.counts[a]-1);
-          }
+          for(var a=0;a<s.counts.length;a++) s.counts[a]=Math.max(0,s.counts[a]-1);
           s.crafted++;
           applyXP(100);
         }
         s.level=0;
         render();
       };
-      row.appendChild(btn);
+      btnWrap.appendChild(btn);
+      btnWrap.appendChild(btnTip);
+      row.appendChild(btnWrap);
 
       var toggle=document.createElement('div');
       toggle.className='toggle';
@@ -316,74 +290,66 @@ function render(){
         var foilTop=document.createElement('div');
         foilTop.className='top foil-separator';
         var foilCountLabel=foilOwned+'/'+s.foil.length+' cards';
-        if(s.foil.length > 5){
-          foilCountLabel += ' <span class="info-tip" data-tip="Scroll horizontally to see the full foil card set.">?</span>';
-        }
+        if(s.foil.length>5) foilCountLabel += ' <span class="info-tip" data-tip="Scroll horizontally to see the full foil card set.">?</span>';
         foilTop.innerHTML='<div>Foil</div><div>'+foilCountLabel+'</div>';
         row.appendChild(foilTop);
 
         var foilRow=document.createElement('div');
         foilRow.className='content';
-
         var fbadge=document.createElement('div');
         fbadge.className='badge foil';
         fbadge.textContent='Foil Badge';
-
         var fcardsWrap=document.createElement('div');
         fcardsWrap.className='cards-wrap';
         var fcards=document.createElement('div');
         fcards.className='cards';
         for(var j=0;j<s.foil.length;j++){
-          var foilMissing = Math.max(0, s.foilLevel - s.foil[j]);
-          var foilMissingCost = calcMissingCost(s.foilPrices[j], s.foil[j], s.foilLevel);
-          fcards.appendChild(makeCard(s.foil[j], true, foilMissing, foilMissingCost));
+          var foilMissing=Math.max(0,s.foilLevel-s.foil[j]);
+          var foilMissingCost=calcMissingCost(s.foilPrices[j],s.foil[j],s.foilLevel);
+          fcards.appendChild(makeCard(s.foil[j],true,foilMissing,foilMissingCost));
         }
         fcardsWrap.appendChild(fcards);
-
         foilRow.appendChild(fbadge);
         foilRow.appendChild(fcardsWrap);
         row.appendChild(foilRow);
 
-        var foilControls = buildLevelControls(
-          'foil levels',
-          s.foilLevel,
-          Math.min(5, s.max - (s.foilCrafted||0)),
-          function(){ s.foilLevel--; render(); },
-          function(){ s.foilLevel++; render(); },
-          'Estimated price only. Missing foil cards may be bought during bulk craft, and purchase can fail.'
-        );
-        row.appendChild(foilControls);
+        row.appendChild(buildLevelControls('foil levels',s.foilLevel,Math.min(5,s.max-(s.foilCrafted||0)),function(){s.foilLevel--;render();},function(){s.foilLevel++;render();},'Estimated price only. Missing foil cards may be bought during bulk craft, and purchase can fail.'));
 
+        var fBtnWrap=document.createElement('div');
+        fBtnWrap.className='button-row';
         var fBtn=document.createElement('button');
         fBtn.textContent='Craft Foil Badge';
-        var foilFullSets = minArray(s.foil);
-        var foilDesired = Math.max(1, s.foilLevel);
-        fBtn.disabled = foilFullSets < foilDesired;
+        var fBtnTip=document.createElement('span');
+        fBtnTip.className='info-tip';
+        fBtnTip.textContent='?';
+        fBtnTip.setAttribute('data-tip','Individual craft is only available per badge and only when all required cards are already present. Otherwise, use Bulk Craft.');
+        var foilFullSets=minArray(s.foil);
+        var foilDesired=Math.max(1,s.foilLevel);
+        fBtn.disabled=foilFullSets<foilDesired;
         fBtn.onclick=function(){
           var lvlf=Math.max(1,s.foilLevel);
           for(var lf=0;lf<lvlf;lf++){
-            for(var b=0;b<s.foil.length;b++){
-              s.foil[b]=Math.max(0,s.foil[b]-1);
-            }
+            for(var b=0;b<s.foil.length;b++) s.foil[b]=Math.max(0,s.foil[b]-1);
             s.foilCrafted++;
             applyXP(100);
           }
           s.foilLevel=0;
           render();
         };
-        row.appendChild(fBtn);
+        fBtnWrap.appendChild(fBtn);
+        fBtnWrap.appendChild(fBtnTip);
+        row.appendChild(fBtnWrap);
       }
 
       var rowPrice=document.createElement('div');
       rowPrice.className='price';
       rowPrice.textContent='Row estimate: $'+calcRowCost(s).toFixed(2);
       row.appendChild(rowPrice);
-
       list.appendChild(row);
     })(sets[si]);
   }
 
-  document.getElementById('price').textContent='Estimated cost: $'+calcCost().toFixed(2);
+  document.getElementById('price').textContent='Estimated subtotal: $'+calcCost().toFixed(2);
   updateXPUI();
 }
 
@@ -391,16 +357,12 @@ document.getElementById('bulkBtn').onclick=function(){
   for(var si=0;si<sets.length;si++){
     var s=sets[si];
     for(var l=0;l<s.level;l++){
-      for(var i=0;i<s.counts.length;i++){
-        s.counts[i]=Math.max(0,s.counts[i]-1);
-      }
+      for(var i=0;i<s.counts.length;i++) s.counts[i]=Math.max(0,s.counts[i]-1);
       s.crafted++;
       applyXP(100);
     }
     for(var lf=0;lf<s.foilLevel;lf++){
-      for(var j=0;j<s.foil.length;j++){
-        s.foil[j]=Math.max(0,s.foil[j]-1);
-      }
+      for(var j=0;j<s.foil.length;j++) s.foil[j]=Math.max(0,s.foil[j]-1);
       s.foilCrafted++;
       applyXP(100);
     }
