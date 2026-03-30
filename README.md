@@ -54,7 +54,8 @@ var sets=[
   {name:'Portal 3',counts:[1,1,1,1,1,1,1,1,1,1,1,1,1],foil:[0,1,0,1,0,1,0,1,0,1,0,1,0],prices:[0.08,0.09,0.10,0.11,0.12,0.13,0.11,0.12,0.10,0.14,0.13,0.12,0.15],foilPrices:[0.21,0.22,0.23,0.24,0.25,0.26,0.24,0.25,0.23,0.27,0.26,0.25,0.28],showFoil:false,level:0,foilLevel:0,crafted:0,foilCrafted:0,max:5}
 ];
 
-var baseXP=78*1000+400;
+var profileLevel=78;
+var profileXP=400;
 
 function countOwned(arr){
   var owned=0;
@@ -133,15 +134,11 @@ function calcCost(){
   return total;
 }
 
-function updateXPUI(){
-  var currentXP = baseXP;
-  var add = calcPreviewXP();
-  var startLevel = Math.floor(currentXP/1000);
-  var currentLevel = startLevel;
-  var progress = currentXP % 1000;
-  var req = levelRequirement(currentLevel + 1);
+function simulateXP(level, xp, add){
+  var currentLevel = level;
+  var progress = xp;
   var remaining = add;
-  var crossed = false;
+  var req = levelRequirement(currentLevel + 1);
 
   while(remaining > 0){
     var room = req - progress;
@@ -150,29 +147,39 @@ function updateXPUI(){
       currentLevel += 1;
       progress = 0;
       req = levelRequirement(currentLevel + 1);
-      crossed = true;
     } else {
       progress += remaining;
       remaining = 0;
     }
   }
 
-  document.getElementById('levelLine').textContent='Level '+startLevel+' → '+currentLevel;
+  return { level: currentLevel, xp: progress, req: req };
+}
 
-  if(crossed){
+function applyXP(amount){
+  var result = simulateXP(profileLevel, profileXP, amount);
+  profileLevel = result.level;
+  profileXP = result.xp;
+}
+
+function updateXPUI(){
+  var add = calcPreviewXP();
+  var preview = simulateXP(profileLevel, profileXP, add);
+
+  document.getElementById('levelLine').textContent='Level '+profileLevel+' → '+preview.level;
+
+  if(preview.level > profileLevel){
     document.getElementById('xpOld').style.width='0%';
     document.getElementById('xpNew').style.left='0%';
-    document.getElementById('xpNew').style.width=(progress/req*100)+'%';
+    document.getElementById('xpNew').style.width=(preview.xp/preview.req*100)+'%';
   } else {
-    var startProgress = currentXP % 1000;
-    var startReq = levelRequirement(startLevel + 1);
-    var basePct = startProgress/startReq*100;
+    var basePct = profileXP/levelRequirement(profileLevel + 1)*100;
     document.getElementById('xpOld').style.width=basePct+'%';
     document.getElementById('xpNew').style.left=basePct+'%';
-    document.getElementById('xpNew').style.width=((progress-startProgress)/startReq*100)+'%';
+    document.getElementById('xpNew').style.width=((preview.xp-profileXP)/levelRequirement(profileLevel + 1)*100)+'%';
   }
 
-  document.getElementById('xpLabel').textContent=progress+' / '+req+' XP';
+  document.getElementById('xpLabel').textContent=preview.xp+' / '+preview.req+' XP';
 }
 
 function buildLevelControls(labelText, value, maxValue, onDown, onUp, hintText){
@@ -291,7 +298,7 @@ function render(){
             s.counts[a]=Math.max(0,s.counts[a]-1);
           }
           s.crafted++;
-          baseXP+=100;
+          applyXP(100);
         }
         s.level=0;
         render();
@@ -359,7 +366,7 @@ function render(){
               s.foil[b]=Math.max(0,s.foil[b]-1);
             }
             s.foilCrafted++;
-            baseXP+=100;
+            applyXP(100);
           }
           s.foilLevel=0;
           render();
@@ -388,14 +395,14 @@ document.getElementById('bulkBtn').onclick=function(){
         s.counts[i]=Math.max(0,s.counts[i]-1);
       }
       s.crafted++;
-      baseXP+=100;
+      applyXP(100);
     }
     for(var lf=0;lf<s.foilLevel;lf++){
       for(var j=0;j<s.foil.length;j++){
         s.foil[j]=Math.max(0,s.foil[j]-1);
       }
       s.foilCrafted++;
-      baseXP+=100;
+      applyXP(100);
     }
     s.level=0;
     s.foilLevel=0;
