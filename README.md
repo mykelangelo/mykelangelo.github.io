@@ -239,7 +239,7 @@ function render(){
       var title=s.name+' (Level '+s.crafted+')';
       if(s.showFoil) title += ' | Foil Level '+(s.foilCrafted||0);
       var countLabel=owned+'/'+s.counts.length+' cards';
-      if(s.counts.length>5) countLabel += ' <span class="info-tip" data-tip="Scroll horizontally to see the full card set.">?</span>';
+      if(s.counts.length>5) countLabel += ' <span class="info-tip right-edge-tip" data-tip="Scroll horizontally to see the full card set.">?</span>';
       row.innerHTML='<div class="top"><div>'+title+'</div><div>'+countLabel+'</div></div>';
 
       var main=document.createElement('div');
@@ -299,7 +299,7 @@ function render(){
         var foilTop=document.createElement('div');
         foilTop.className='top foil-separator';
         var foilCountLabel=foilOwned+'/'+s.foil.length+' cards';
-        if(s.foil.length>5) foilCountLabel += ' <span class="info-tip" data-tip="Scroll horizontally to see the full foil card set.">?</span>';
+        if(s.foil.length>5) foilCountLabel += ' <span class="info-tip right-edge-tip" data-tip="Scroll horizontally to see the full foil card set.">?</span>';
         foilTop.innerHTML='<div>Foil</div><div>'+foilCountLabel+'</div>';
         row.appendChild(foilTop);
 
