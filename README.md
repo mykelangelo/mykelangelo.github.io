@@ -3,6 +3,7 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Steam Badge Crafting Prototype</title>
+<link rel="shortcut icon" type="image/x-icon" href="favicon.ico">
 <style>
 body{margin:0;font-family:Arial,sans-serif;background:#1b2838;color:#c7d5e0}
 .container{max-width:1100px;margin:40px auto;padding:0 16px 180px 16px}
