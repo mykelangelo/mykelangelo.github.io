@@ -34,6 +34,10 @@ button:disabled{background:#3a3a3a;color:#777;cursor:not-allowed}
 .right-edge-tip:hover::after{left:auto;right:0;transform:none;max-width:min(240px,calc(100vw - 24px))}
 .foil-separator{margin-top:10px;padding-top:10px;border-top:1px solid #2a475e}
 .xp-overlay{position:fixed;right:16px;bottom:16px;width:320px;background:rgba(14,20,27,.96);border:1px solid #2a475e;border-radius:8px;padding:12px;box-shadow:0 8px 24px rgba(0,0,0,.35);z-index:1000}
+.footer-note{margin-top:24px;font-size:12px;color:#8f98a0;text-align:center}
+.footer-note a{color:#66c0f4;text-decoration:none}
+.footer-note a:hover{text-decoration:underline}
+.footer-copyleft{width:14px;height:14px;vertical-align:-2px;margin-right:4px;transform:rotate(180deg)}
 .overlay-top{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:8px}
 .overlay-meta{min-width:0;flex:1}
 .overlay-actions{display:flex;justify-content:flex-end;align-items:center;gap:8px;flex:0 0 auto}
@@ -62,8 +66,8 @@ button:disabled{background:#3a3a3a;color:#777;cursor:not-allowed}
     </div>
     <div id="xpLabel" class="xp-label"></div>
   </div>
+  <div class="footer-note"><img class="footer-copyleft" alt="Copyleft" src="data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Ccircle cx='12' cy='12' r='10' fill='none' stroke='%238f98a0' stroke-width='1.8'/%3E%3Cpath d='M15.5 8.2 A5 5 0 1 0 15.5 15.8' fill='none' stroke='%238f98a0' stroke-width='1.8' stroke-linecap='round'/%3E%3C/svg%3E" />2026 Mykola Papenko · <a href="https://github.com/mykelangelo/mykelangelo.github.io/blob/main/LICENSE.md" target="_blank" rel="noopener noreferrer">License</a></div>
 </div>
-
 <script>
 var sets=[
   {name:'Portal',counts:[2,0,2,0,2],foil:[1,0,1,0,1],prices:[0.11,0.14,0.10,0.16,0.12],foilPrices:[0.24,0.28,0.22,0.30,0.25],showFoil:false,level:0,foilLevel:0,crafted:0,foilCrafted:0,max:5},
