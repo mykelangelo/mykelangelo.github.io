@@ -37,7 +37,7 @@ button:disabled{background:#3a3a3a;color:#777;cursor:not-allowed}
 .footer-note{margin-top:24px;font-size:12px;color:#8f98a0;text-align:center}
 .footer-note a{color:#66c0f4;text-decoration:none}
 .footer-note a:hover{text-decoration:underline}
-.footer-copyleft{width:14px;height:14px;vertical-align:-2px;margin-right:4px;transform:rotate(180deg)}
+.footer-copyleft{width:14px;height:14px;vertical-align:-2px;margin-right:4px;transform:rotate(180deg);background:transparent}
 .overlay-top{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:8px}
 .overlay-meta{min-width:0;flex:1}
 .overlay-actions{display:flex;justify-content:flex-end;align-items:center;gap:8px;flex:0 0 auto}
