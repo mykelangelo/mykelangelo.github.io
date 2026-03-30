@@ -5,7 +5,7 @@
 <title>Steam Badge Crafting Prototype</title>
 <style>
 body{margin:0;font-family:Arial,sans-serif;background:#1b2838;color:#c7d5e0}
-.container{max-width:1100px;margin:40px auto;padding:0 16px}
+.container{max-width:1100px;margin:40px auto;padding:0 16px 180px 16px}
 .row{background:linear-gradient(to right,#0e141b,#16202d);border:1px solid #2a475e;padding:20px;margin-bottom:20px;border-radius:6px}
 .top{display:flex;justify-content:space-between;font-size:14px;color:#8f98a0;margin-bottom:10px}
 .content{display:flex;align-items:center;gap:12px}
