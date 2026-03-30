@@ -13,7 +13,7 @@ body{margin:0;font-family:Arial,sans-serif;background:#1b2838;color:#c7d5e0}
 .badge.foil{border-color:#ffd700;color:#ffd700}
 .cards-wrap{flex:1;overflow-x:auto;overflow-y:hidden;padding-bottom:6px}
 .cards{display:flex;gap:10px;min-width:max-content}
-.card{width:90px;height:120px;background:#0e141b;border:2px dashed #566b7f;display:flex;flex-direction:column;align-items:center;justify-content:center;color:#c7d5e0;flex:0 0 auto}
+.card{width:90px;height:120px;background:#0e141b;border:2px dashed #566b7f;display:flex;flex-direction:column;align-items:center;justify-content:center;color:#c7d5e0;flex:0 0 auto;box-sizing:border-box}
 .card.owned{background:#2a475e;border:1px solid #000}
 .card.foil{border-color:#ffd700;color:#ffd700}
 .toggle{cursor:pointer;color:#66c0f4;margin-top:8px;font-size:13px}
@@ -32,7 +32,6 @@ button:disabled{background:#3a3a3a;color:#777;cursor:not-allowed}
 .info-tip{display:inline-block;margin-left:8px;color:#66c0f4;border:1px solid #66c0f4;border-radius:50%;width:16px;height:16px;font-size:11px;line-height:16px;text-align:center;position:relative;cursor:default;vertical-align:middle}
 .info-tip:hover::after{content:attr(data-tip);position:absolute;bottom:125%;left:50%;transform:translateX(-50%);background:#0e141b;border:1px solid #66c0f4;color:#c7d5e0;padding:6px 8px;white-space:nowrap;font-size:12px;z-index:10}
 .foil-separator{margin-top:10px;padding-top:10px;border-top:1px solid #2a475e}
-.small-muted{font-size:12px;color:#8f98a0}
 </style>
 </head>
 <body>
@@ -50,34 +49,51 @@ button:disabled{background:#3a3a3a;color:#777;cursor:not-allowed}
 
 <script>
 var sets=[
- {name:"Portal",counts:[2,0,2,0,2],foil:[1,0,1,0,1],prices:[0.11,0.14,0.10,0.16,0.12],foilPrices:[0.24,0.28,0.22,0.30,0.25],showFoil:false,level:0,foilLevel:0,crafted:0,foilCrafted:0,max:5},
- {name:"Portal 2",counts:[3,2,3,2,2,2,2,2],foil:[1,1,1,1,1,1,1,1],prices:[0.09,0.11,0.10,0.12,0.13,0.14,0.15,0.16],foilPrices:[0.22,0.24,0.23,0.25,0.26,0.27,0.28,0.29],showFoil:false,level:0,foilLevel:0,crafted:0,foilCrafted:0,max:5},
- {name:"Portal 3",counts:[1,1,1,1,1,1,1,1,1,1,1,1,1],foil:[0,1,0,1,0,1,0,1,0,1,0,1,0],prices:[0.08,0.09,0.10,0.11,0.12,0.13,0.11,0.12,0.10,0.14,0.13,0.12,0.15],foilPrices:[0.21,0.22,0.23,0.24,0.25,0.26,0.24,0.25,0.23,0.27,0.26,0.25,0.28],showFoil:false,level:0,foilLevel:0,crafted:0,foilCrafted:0,max:5}
+  {name:'Portal',counts:[2,0,2,0,2],foil:[1,0,1,0,1],prices:[0.11,0.14,0.10,0.16,0.12],foilPrices:[0.24,0.28,0.22,0.30,0.25],showFoil:false,level:0,foilLevel:0,crafted:0,foilCrafted:0,max:5},
+  {name:'Portal 2',counts:[3,2,3,2,2,2,2,2],foil:[1,1,1,1,1,1,1,1],prices:[0.09,0.11,0.10,0.12,0.13,0.14,0.15,0.16],foilPrices:[0.22,0.24,0.23,0.25,0.26,0.27,0.28,0.29],showFoil:false,level:0,foilLevel:0,crafted:0,foilCrafted:0,max:5},
+  {name:'Portal 3',counts:[1,1,1,1,1,1,1,1,1,1,1,1,1],foil:[0,1,0,1,0,1,0,1,0,1,0,1,0],prices:[0.08,0.09,0.10,0.11,0.12,0.13,0.11,0.12,0.10,0.14,0.13,0.12,0.15],foilPrices:[0.21,0.22,0.23,0.24,0.25,0.26,0.24,0.25,0.23,0.27,0.26,0.25,0.28],showFoil:false,level:0,foilLevel:0,crafted:0,foilCrafted:0,max:5}
 ];
 
 var baseXP=78*1000+400;
 
+function countOwned(arr){
+  var owned=0;
+  for(var i=0;i<arr.length;i++){
+    if(arr[i]>0){ owned++; }
+  }
+  return owned;
+}
+
+function minArray(arr){
+  var m=arr[0];
+  for(var i=1;i<arr.length;i++){
+    if(arr[i]<m){ m=arr[i]; }
+  }
+  return m;
+}
+
 function levelRequirement(level){
-  if(level<=79) return 1000;
+  if(level<=79){ return 1000; }
   return 1000 + (level-79)*100;
 }
 
 function calcPreviewXP(){
   var add=0;
-  sets.forEach(function(s){
-    add += (s.level||0)*100 + (s.foilLevel||0)*100;
-  });
+  for(var i=0;i<sets.length;i++){
+    add += (sets[i].level||0)*100;
+    add += (sets[i].foilLevel||0)*100;
+  }
   return add;
 }
 
 function priceMultiplierForLevel(levelIndex){
-  if(levelIndex < 2) return 1;
+  if(levelIndex < 2){ return 1; }
   return 1 + ((levelIndex - 1) * 0.08);
 }
 
 function priceAt(basePrice, levelIndex){
-  var microFluctuation = ((levelIndex % 2) === 0 ? 0.01 : 0.02);
-  return (basePrice + microFluctuation) * priceMultiplierForLevel(levelIndex);
+  var micro = ((levelIndex % 2) === 0 ? 0.01 : 0.02);
+  return (basePrice + micro) * priceMultiplierForLevel(levelIndex);
 }
 
 function calcMissingCost(basePrice, ownedCount, desiredLevel){
@@ -111,7 +127,9 @@ function calcRowCost(s){
 
 function calcCost(){
   var total=0;
-  sets.forEach(function(s){ total += calcRowCost(s); });
+  for(var i=0;i<sets.length;i++){
+    total += calcRowCost(sets[i]);
+  }
   return total;
 }
 
@@ -161,10 +179,22 @@ function buildLevelControls(labelText, value, maxValue, onDown, onUp, hintText){
   var controls=document.createElement('div');
   controls.className='level-controls';
 
-  var down=document.createElement('div'); down.className='arrow'; down.textContent='▼';
-  var text=document.createElement('div'); text.className='level-text'; text.textContent='+'+value+' '+labelText;
-  var up=document.createElement('div'); up.className='arrow'; up.textContent='▲';
-  var tip=document.createElement('span'); tip.className='info-tip'; tip.textContent='?'; tip.setAttribute('data-tip', hintText);
+  var down=document.createElement('div');
+  down.className='arrow';
+  down.textContent='▼';
+
+  var text=document.createElement('div');
+  text.className='level-text';
+  text.textContent='+'+value+' '+labelText;
+
+  var up=document.createElement('div');
+  up.className='arrow';
+  up.textContent='▲';
+
+  var tip=document.createElement('span');
+  tip.className='info-tip';
+  tip.textContent='?';
+  tip.setAttribute('data-tip', hintText);
 
   if(value <= 0){ down.classList.add('disabled'); }
   if(value >= maxValue){ up.classList.add('disabled'); }
@@ -179,167 +209,180 @@ function buildLevelControls(labelText, value, maxValue, onDown, onUp, hintText){
   return controls;
 }
 
+function makeCard(c, isFoil, missingCount, missingCost){
+  var el=document.createElement('div');
+  el.className='card'+(isFoil?' foil':'')+(c>0?' owned':'');
+  if(c>0){
+    el.innerHTML=(isFoil?'<div>★</div>':'<div>✔</div>')+'<div>x'+c+'</div>';
+  } else {
+    el.innerHTML='<div>?</div>';
+  }
+  if(missingCount > 0){
+    var buy=document.createElement('div');
+    buy.className='buy-hint';
+    buy.innerHTML='🛒 x'+missingCount+'<br>$'+missingCost.toFixed(2);
+    el.appendChild(buy);
+  }
+  return el;
+}
+
 function render(){
   var list=document.getElementById('list');
   list.innerHTML='';
 
-  sets.forEach(function(s){
-    var row=document.createElement('div');
-    row.className='row';
+  for(var si=0;si<sets.length;si++){
+    (function(s){
+      var row=document.createElement('div');
+      row.className='row';
 
-    var owned=s.counts.filter(function(c){ return c>0; }).length;
-    var title = s.name + ' (Level ' + s.crafted + ')';
-    if(s.showFoil){
-      title += ' | Foil Level ' + (s.foilCrafted || 0);
-    }
-    row.innerHTML='<div class="top"><div>'+title+'</div><div>'+owned+'/'+s.counts.length+' cards</div></div>';
-
-    var main=document.createElement('div');
-    main.className='content';
-
-    var badge=document.createElement('div');
-    badge.className='badge';
-    badge.textContent='Badge';
-
-    var cardsWrap=document.createElement('div');
-    cardsWrap.className='cards-wrap';
-    var cards=document.createElement('div');
-    cards.className='cards';
-    s.counts.forEach(function(c, i){
-      var el=document.createElement('div');
-      el.className='card'+(c>0?' owned':'');
-      el.innerHTML=c>0?'<div>✔</div><div>x'+c+'</div>':'<div>?</div>';
-      var missing = Math.max(0, s.level - c);
-      if(missing > 0){
-        var buy=document.createElement('div');
-        buy.className='buy-hint';
-        buy.innerHTML='🛒 x'+missing+'<br>$'+calcMissingCost(s.prices[i], c, s.level).toFixed(2);
-        el.appendChild(buy);
+      var owned=countOwned(s.counts);
+      var title=s.name+' (Level '+s.crafted+')';
+      if(s.showFoil){
+        title += ' | Foil Level ' + (s.foilCrafted || 0);
       }
-      cards.appendChild(el);
-    });
-    cardsWrap.appendChild(cards);
 
-    main.appendChild(badge);
-    main.appendChild(cardsWrap);
-    row.appendChild(main);
-
-    var normalControls = buildLevelControls(
-      'levels',
-      s.level,
-      Math.min(5, s.max - s.crafted),
-      function(){ s.level--; render(); },
-      function(){ s.level++; render(); },
-      'Estimated price only. Missing cards may be bought during bulk craft, and purchase can fail.'
-    );
-    row.appendChild(normalControls);
-
-    var btn=document.createElement('button');
-    btn.textContent='Craft Badge';
-    var normalFullSets = Math.min.apply(null, s.counts);
-    var normalDesired = Math.max(1, s.level);
-    btn.disabled = normalFullSets < normalDesired;
-    btn.onclick=function(){
-      var lvl=Math.max(1,s.level);
-      for(var l=0;l<lvl;l++){
-        for(var i=0;i<s.counts.length;i++){
-          s.counts[i]=Math.max(0,s.counts[i]-1);
-        }
-        s.crafted++;
-        baseXP+=100;
+      var countLabel=owned+'/'+s.counts.length+' cards';
+      if(s.counts.length > 5){
+        countLabel += ' <span class="info-tip" data-tip="Scroll horizontally to see the full card set.">?</span>';
       }
-      s.level=0;
-      render();
-    };
-    row.appendChild(btn);
+      row.innerHTML='<div class="top"><div>'+title+'</div><div>'+countLabel+'</div></div>';
 
-    var toggle=document.createElement('div');
-    toggle.className='toggle';
-    toggle.textContent=s.showFoil?'▼ Hide Foil':'▶ Show Foil';
-    toggle.onclick=function(){ s.showFoil=!s.showFoil; render(); };
-    row.appendChild(toggle);
+      var main=document.createElement('div');
+      main.className='content';
 
-    if(s.showFoil){
-      var foilOwned=s.foil.filter(function(c){ return c>0; }).length;
-      var foilTop=document.createElement('div');
-      foilTop.className='top foil-separator';
-      foilTop.innerHTML='<div>Foil</div><div>'+foilOwned+'/'+s.foil.length+' cards</div>';
-      row.appendChild(foilTop);
+      var badge=document.createElement('div');
+      badge.className='badge';
+      badge.textContent='Badge';
 
-      var foilRow=document.createElement('div');
-      foilRow.className='content';
+      var cardsWrap=document.createElement('div');
+      cardsWrap.className='cards-wrap';
+      var cards=document.createElement('div');
+      cards.className='cards';
+      for(var i=0;i<s.counts.length;i++){
+        var missing = Math.max(0, s.level - s.counts[i]);
+        var missingCost = calcMissingCost(s.prices[i], s.counts[i], s.level);
+        cards.appendChild(makeCard(s.counts[i], false, missing, missingCost));
+      }
+      cardsWrap.appendChild(cards);
 
-      var fbadge=document.createElement('div');
-      fbadge.className='badge foil';
-      fbadge.textContent='Foil Badge';
+      main.appendChild(badge);
+      main.appendChild(cardsWrap);
+      row.appendChild(main);
 
-      var fcardsWrap=document.createElement('div');
-      fcardsWrap.className='cards-wrap';
-      var fcards=document.createElement('div');
-      fcards.className='cards';
-      s.foil.forEach(function(c, i){
-        var el=document.createElement('div');
-        el.className='card foil'+(c>0?' owned':'');
-        el.innerHTML=c>0?'<div>★</div><div>x'+c+'</div>':'<div>?</div>';
-        var missing = Math.max(0, s.foilLevel - c);
-        if(missing > 0){
-          var buy=document.createElement('div');
-          buy.className='buy-hint';
-          buy.innerHTML='🛒 x'+missing+'<br>$'+calcMissingCost(s.foilPrices[i], c, s.foilLevel).toFixed(2);
-          el.appendChild(buy);
-        }
-        fcards.appendChild(el);
-      });
-      fcardsWrap.appendChild(fcards);
-
-      foilRow.appendChild(fbadge);
-      foilRow.appendChild(fcardsWrap);
-      row.appendChild(foilRow);
-
-      var foilControls = buildLevelControls(
-        'foil levels',
-        s.foilLevel,
-        Math.min(5, s.max - (s.foilCrafted||0)),
-        function(){ s.foilLevel--; render(); },
-        function(){ s.foilLevel++; render(); },
-        'Estimated price only. Missing foil cards may be bought during bulk craft, and purchase can fail.'
+      var normalControls = buildLevelControls(
+        'levels',
+        s.level,
+        Math.min(5, s.max - s.crafted),
+        function(){ s.level--; render(); },
+        function(){ s.level++; render(); },
+        'Estimated price only. Missing cards may be bought during bulk craft, and purchase can fail.'
       );
-      row.appendChild(foilControls);
+      row.appendChild(normalControls);
 
-      var fBtn=document.createElement('button');
-      fBtn.textContent='Craft Foil Badge';
-      var foilFullSets = Math.min.apply(null, s.foil);
-      var foilDesired = Math.max(1, s.foilLevel);
-      fBtn.disabled = foilFullSets < foilDesired;
-      fBtn.onclick=function(){
-        var lvl=Math.max(1,s.foilLevel);
-        for(var lf=0;lf<lvl;lf++){
-          for(var j=0;j<s.foil.length;j++){
-            s.foil[j]=Math.max(0,s.foil[j]-1);
+      var btn=document.createElement('button');
+      btn.textContent='Craft Badge';
+      var normalFullSets = minArray(s.counts);
+      var normalDesired = Math.max(1, s.level);
+      btn.disabled = normalFullSets < normalDesired;
+      btn.onclick=function(){
+        var lvl=Math.max(1,s.level);
+        for(var l=0;l<lvl;l++){
+          for(var a=0;a<s.counts.length;a++){
+            s.counts[a]=Math.max(0,s.counts[a]-1);
           }
-          s.foilCrafted++;
+          s.crafted++;
           baseXP+=100;
         }
-        s.foilLevel=0;
+        s.level=0;
         render();
       };
-      row.appendChild(fBtn);
-    }
+      row.appendChild(btn);
 
-    var rowPrice=document.createElement('div');
-    rowPrice.className='price';
-    rowPrice.textContent='Row estimate: $'+calcRowCost(s).toFixed(2);
-    row.appendChild(rowPrice);
+      var toggle=document.createElement('div');
+      toggle.className='toggle';
+      toggle.textContent=s.showFoil?'▼ Hide Foil':'▶ Show Foil';
+      toggle.onclick=function(){ s.showFoil=!s.showFoil; render(); };
+      row.appendChild(toggle);
 
-    list.appendChild(row);
-  });
+      if(s.showFoil){
+        var foilOwned=countOwned(s.foil);
+        var foilTop=document.createElement('div');
+        foilTop.className='top foil-separator';
+        var foilCountLabel=foilOwned+'/'+s.foil.length+' cards';
+        if(s.foil.length > 5){
+          foilCountLabel += ' <span class="info-tip" data-tip="Scroll horizontally to see the full foil card set.">?</span>';
+        }
+        foilTop.innerHTML='<div>Foil</div><div>'+foilCountLabel+'</div>';
+        row.appendChild(foilTop);
+
+        var foilRow=document.createElement('div');
+        foilRow.className='content';
+
+        var fbadge=document.createElement('div');
+        fbadge.className='badge foil';
+        fbadge.textContent='Foil Badge';
+
+        var fcardsWrap=document.createElement('div');
+        fcardsWrap.className='cards-wrap';
+        var fcards=document.createElement('div');
+        fcards.className='cards';
+        for(var j=0;j<s.foil.length;j++){
+          var foilMissing = Math.max(0, s.foilLevel - s.foil[j]);
+          var foilMissingCost = calcMissingCost(s.foilPrices[j], s.foil[j], s.foilLevel);
+          fcards.appendChild(makeCard(s.foil[j], true, foilMissing, foilMissingCost));
+        }
+        fcardsWrap.appendChild(fcards);
+
+        foilRow.appendChild(fbadge);
+        foilRow.appendChild(fcardsWrap);
+        row.appendChild(foilRow);
+
+        var foilControls = buildLevelControls(
+          'foil levels',
+          s.foilLevel,
+          Math.min(5, s.max - (s.foilCrafted||0)),
+          function(){ s.foilLevel--; render(); },
+          function(){ s.foilLevel++; render(); },
+          'Estimated price only. Missing foil cards may be bought during bulk craft, and purchase can fail.'
+        );
+        row.appendChild(foilControls);
+
+        var fBtn=document.createElement('button');
+        fBtn.textContent='Craft Foil Badge';
+        var foilFullSets = minArray(s.foil);
+        var foilDesired = Math.max(1, s.foilLevel);
+        fBtn.disabled = foilFullSets < foilDesired;
+        fBtn.onclick=function(){
+          var lvlf=Math.max(1,s.foilLevel);
+          for(var lf=0;lf<lvlf;lf++){
+            for(var b=0;b<s.foil.length;b++){
+              s.foil[b]=Math.max(0,s.foil[b]-1);
+            }
+            s.foilCrafted++;
+            baseXP+=100;
+          }
+          s.foilLevel=0;
+          render();
+        };
+        row.appendChild(fBtn);
+      }
+
+      var rowPrice=document.createElement('div');
+      rowPrice.className='price';
+      rowPrice.textContent='Row estimate: $'+calcRowCost(s).toFixed(2);
+      row.appendChild(rowPrice);
+
+      list.appendChild(row);
+    })(sets[si]);
+  }
 
   document.getElementById('price').textContent='Estimated cost: $'+calcCost().toFixed(2);
   updateXPUI();
 }
 
 document.getElementById('bulkBtn').onclick=function(){
-  sets.forEach(function(s){
+  for(var si=0;si<sets.length;si++){
+    var s=sets[si];
     for(var l=0;l<s.level;l++){
       for(var i=0;i<s.counts.length;i++){
         s.counts[i]=Math.max(0,s.counts[i]-1);
@@ -356,7 +399,7 @@ document.getElementById('bulkBtn').onclick=function(){
     }
     s.level=0;
     s.foilLevel=0;
-  });
+  }
   render();
 };
 
